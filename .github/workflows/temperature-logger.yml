@@ -2,8 +2,8 @@ name: Temperature Logger
 
 on:
   schedule:
-    # 注意: 実際の実行は遅延する可能性があります
-    - cron: '*/15 * * * *'
+    # 毎時21分に実行
+    - cron: '21 * * * *'
   workflow_dispatch:  # 手動トリガーのサポート
   push:  # プッシュ時にも実行（ワークフローの活性化を維持）
     branches:
