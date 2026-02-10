@@ -12,6 +12,7 @@ permissions:
 jobs:
   log-temperature:
     runs-on: ubuntu-latest
+    environment: production
     
     steps:
       - name: Checkout repository
