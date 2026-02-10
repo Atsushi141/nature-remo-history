@@ -2,9 +2,14 @@ name: Temperature Logger
 
 on:
   schedule:
-    # 10分ごとに実行 (*/10 * * * *)
-    - cron: '*/10 * * * *'
+    # 注意: 実際の実行は遅延する可能性があります
+    - cron: '*/15 * * * *'
   workflow_dispatch:  # 手動トリガーのサポート
+  push:  # プッシュ時にも実行（ワークフローの活性化を維持）
+    branches:
+      - main
+    paths:
+      - '.github/workflows/temperature-logger.yml'
 
 permissions:
   contents: write  # リポジトリへの書き込み権限を付与

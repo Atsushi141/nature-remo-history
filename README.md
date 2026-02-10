@@ -173,6 +173,34 @@ timestamp,temperature
 3. 「Save」をクリック
 4. ワークフローを再実行
 
+### Cron スケジュールが実行されない
+
+**症状**: 定期実行が動作しない、またはスケジュール通りに実行されない
+
+**原因と解決方法**:
+
+1. **リポジトリの活動が少ない**
+   - GitHubは非アクティブなリポジトリのcronを自動的に無効化します
+   - 解決策: 定期的に手動実行するか、リポジトリに活動を持たせる
+
+2. **実行の遅延**
+   - GitHub Actionsのcronは正確な時刻に実行されません
+   - 高負荷時は数分〜数十分遅延することがあります
+   - 解決策: 遅延を許容する設計にする
+
+3. **デフォルトブランチの確認**
+   - ワークフローファイルがデフォルトブランチ（main/master）に存在することを確認
+   - 解決策: `git push origin main` でデフォルトブランチにプッシュ
+
+4. **60日間の非活動で無効化**
+   - 60日間リポジトリに活動がないとcronが無効化されます
+   - 解決策: 定期的に手動実行するか、コミットを行う
+
+**推奨される対策**:
+- 手動実行（workflow_dispatch）を定期的に使用する
+- より長い間隔（15分、30分、1時間など）に変更する
+- 外部のcronサービス（GitHub API経由でworkflow_dispatchをトリガー）を使用する
+
 ## テスト
 
 ```bash
@@ -187,6 +215,49 @@ pytest tests/property/
 
 # カバレッジレポート付き
 pytest --cov=logger --cov-report=html
+```
+
+## 代替案: 外部Cronサービスの使用
+
+GitHub Actionsのcronスケジュールが不安定な場合、外部サービスを使用してワークフローをトリガーできます。
+
+### 方法1: cron-job.org を使用
+
+1. [cron-job.org](https://cron-job.org/) にアクセス
+2. アカウントを作成（無料）
+3. 新しいcron jobを作成:
+   - URL: `https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/actions/workflows/temperature-logger.yml/dispatches`
+   - Method: POST
+   - Headers:
+     ```
+     Authorization: Bearer YOUR_GITHUB_TOKEN
+     Accept: application/vnd.github.v3+json
+     ```
+   - Body:
+     ```json
+     {"ref":"main"}
+     ```
+   - Schedule: 10分ごと
+
+### 方法2: GitHub Personal Access Token の作成
+
+外部サービスからワークフローをトリガーするには、Personal Access Tokenが必要です：
+
+1. GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. 「Generate new token」をクリック
+3. Scopes: `repo` と `workflow` を選択
+4. トークンを生成してコピー
+5. 外部cronサービスで使用
+
+### 方法3: 自前のサーバーでcronを実行
+
+```bash
+# crontabに追加
+*/10 * * * * curl -X POST \
+  -H "Authorization: Bearer YOUR_GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/actions/workflows/temperature-logger.yml/dispatches \
+  -d '{"ref":"main"}'
 ```
 
 ## ライセンス
