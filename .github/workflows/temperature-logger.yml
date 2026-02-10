@@ -6,6 +6,9 @@ on:
     - cron: '*/10 * * * *'
   workflow_dispatch:  # 手動トリガーのサポート
 
+permissions:
+  contents: write  # リポジトリへの書き込み権限を付与
+
 jobs:
   log-temperature:
     runs-on: ubuntu-latest

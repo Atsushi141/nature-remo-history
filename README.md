@@ -28,27 +28,41 @@ cd <repository-name>
 3. 「Generate Access Token」をクリックしてトークンを生成
 4. 生成されたトークンをコピー（このトークンは一度しか表示されません）
 
-### 3. GitHub Secretsの設定
+### 3. GitHub Environment と Secrets の設定
 
-**重要**: APIトークンを安全に保管するため、GitHub Secretsを使用します。
+**重要**: APIトークンを安全に保管するため、GitHub Environment Secretsを使用します。
 
-#### 設定手順:
+#### Environment の作成:
 
 1. GitHubリポジトリのページを開く
 2. 「Settings」タブをクリック
-3. 左サイドバーの「Secrets and variables」→「Actions」を選択
-4. 「New repository secret」ボタンをクリック
-5. 以下の情報を入力:
+3. 左サイドバーの「Environments」を選択
+4. 「New environment」ボタンをクリック
+5. Environment name に `production` と入力
+6. 「Configure environment」をクリック
+
+#### Environment Secret の設定:
+
+1. 作成した `production` environment のページで、「Add secret」をクリック
+2. 以下の情報を入力:
    - **Name**: `NATURE_REMO_TOKEN`
    - **Secret**: 手順2で取得したAPIトークンを貼り付け
-6. 「Add secret」をクリック
+3. 「Add secret」をクリック
 
 
-### 4. GitHub Actionsの有効化
+### 4. GitHub Actionsの有効化と権限設定
 
 1. リポジトリの「Actions」タブを開く
 2. ワークフローの実行を許可する
 3. 「Temperature Logger」ワークフローが表示されることを確認
+
+**重要**: ワークフローがデータをコミット・プッシュできるように、以下の権限設定を確認してください:
+
+1. リポジトリの「Settings」→「Actions」→「General」を開く
+2. 「Workflow permissions」セクションで以下を選択:
+   - 「Read and write permissions」を選択
+   - 「Allow GitHub Actions to create and approve pull requests」にチェック（オプション）
+3. 「Save」をクリック
 
 ### 5. 動作確認
 
@@ -117,7 +131,7 @@ timestamp,temperature
 **症状**: GitHub Actionsのワークフローが失敗する
 
 **確認事項**:
-1. `NATURE_REMO_TOKEN` が正しく設定されているか確認
+1. `production` environment に `NATURE_REMO_TOKEN` が正しく設定されているか確認
 2. APIトークンが有効期限内か確認
 3. Nature Remo デバイスがオンラインか確認
 4. Actions タブのログで詳細なエラーメッセージを確認
@@ -128,7 +142,7 @@ timestamp,temperature
 
 **解決方法**:
 1. Nature Remo Cloudで新しいトークンを生成
-2. GitHub Secretsの `NATURE_REMO_TOKEN` を更新
+2. GitHub の `production` environment の `NATURE_REMO_TOKEN` を更新
 3. ワークフローを再実行
 
 ### データが記録されない
@@ -148,6 +162,16 @@ timestamp,temperature
 - Nature Remo APIのレート制限は5分間に30リクエスト
 - 10分ごとの実行では通常問題ありませんが、手動実行を頻繁に行うと制限に達する可能性があります
 - 時間をおいてから再実行してください
+
+### Git Push 権限エラー
+
+**症状**: `Permission denied to github-actions[bot]` または `403 error` が発生
+
+**解決方法**:
+1. リポジトリの「Settings」→「Actions」→「General」を開く
+2. 「Workflow permissions」で「Read and write permissions」を選択
+3. 「Save」をクリック
+4. ワークフローを再実行
 
 ## テスト
 
@@ -177,4 +201,5 @@ pytest --cov=logger --cov-report=html
 
 - [Nature Remo Cloud API ドキュメント](https://developer.nature.global/)
 - [GitHub Actions ドキュメント](https://docs.github.com/ja/actions)
-- [GitHub Secrets の使用方法](https://docs.github.com/ja/actions/security-guides/encrypted-secrets)
+- [GitHub Environments の使用方法](https://docs.github.com/ja/actions/deployment/targeting-different-environments/using-environments-for-deployment)
+- [GitHub Environment Secrets の設定](https://docs.github.com/ja/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-an-environment)
