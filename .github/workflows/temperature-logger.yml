@@ -1,0 +1,44 @@
+name: Temperature Logger
+
+on:
+  schedule:
+    # 10分ごとに実行 (*/10 * * * *)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:  # 手動トリガーのサポート
+
+jobs:
+  log-temperature:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run temperature logger
+        env:
+          NATURE_REMO_TOKEN: ${{ secrets.NATURE_REMO_TOKEN }}
+        run: |
+          python logger.py
+      
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      
+      - name: Commit and push changes
+        run: |
+          git add data/temperature.csv
+          git diff --staged --quiet || git commit -m "Add temperature data: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          git push
